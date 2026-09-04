@@ -159,6 +159,40 @@ class _MobileStockInScreenState extends State<MobileStockInScreen> {
                 child: MobileScanner(
                   controller: _scannerController,
                   onDetect: _onDetect,
+                  errorBuilder: (context, error, child) {
+                    return Container(
+                      color: const Color(0xFF111827),
+                      padding: const EdgeInsets.all(16),
+                      child: Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(LucideIcons.cameraOff, color: Colors.amber, size: 32),
+                            const SizedBox(height: 6),
+                            const Text(
+                              'Camera Stream Inactive',
+                              style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w700),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Type the SKU below or select quick item.',
+                              style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 11),
+                            ),
+                            const SizedBox(height: 10),
+                            ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: MobileAppColors.primary,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                              ),
+                              onPressed: () => _scannerController.start(),
+                              child: const Text('Retry Camera', style: TextStyle(fontSize: 11)),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ),
               const SizedBox(height: 12),

@@ -140,6 +140,58 @@ class _BarcodeGunScreenState extends State<BarcodeGunScreen> {
                 MobileScanner(
                   controller: _scannerController,
                   onDetect: _onDetect,
+                  errorBuilder: (context, error, child) {
+                    return Container(
+                      color: const Color(0xFF111827),
+                      padding: const EdgeInsets.all(20),
+                      child: Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(LucideIcons.cameraOff, color: Colors.amber, size: 36),
+                            const SizedBox(height: 8),
+                            const Text(
+                              'Camera Stream Inactive',
+                              style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w700),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Use Quick Barcode chips below, type code, or click Retry.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 11),
+                            ),
+                            const SizedBox(height: 12),
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                ElevatedButton.icon(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: MobileAppColors.primary,
+                                    foregroundColor: Colors.white,
+                                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                  ),
+                                  icon: const Icon(LucideIcons.refreshCw, size: 14),
+                                  label: const Text('Retry Camera', style: TextStyle(fontSize: 11.5)),
+                                  onPressed: () => _scannerController.start(),
+                                ),
+                                const SizedBox(width: 8),
+                                OutlinedButton.icon(
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: Colors.white,
+                                    side: const BorderSide(color: Colors.white24),
+                                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                  ),
+                                  icon: const Icon(LucideIcons.switchCamera, size: 14),
+                                  label: const Text('Switch Cam', style: TextStyle(fontSize: 11.5)),
+                                  onPressed: () => _scannerController.switchCamera(),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
                 ),
 
                 // Viewfinder Reticle

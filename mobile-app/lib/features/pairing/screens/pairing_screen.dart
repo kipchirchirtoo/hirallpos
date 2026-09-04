@@ -232,6 +232,58 @@ class _PairingScreenState extends State<PairingScreen> {
         MobileScanner(
           controller: _scannerController,
           onDetect: _handleBarcodeCapture,
+          errorBuilder: (context, error, child) {
+            return Container(
+              color: const Color(0xFF111827),
+              padding: const EdgeInsets.all(24),
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(LucideIcons.cameraOff, color: Colors.amber, size: 44),
+                    const SizedBox(height: 12),
+                    const Text(
+                      'Camera Access Needed',
+                      style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'If on Web browser via IP, grant camera permissions or use 1-tap instant connect.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.white.withOpacity(0.75), fontSize: 12),
+                    ),
+                    const SizedBox(height: 20),
+                    ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: MobileAppColors.primary,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      icon: const Icon(LucideIcons.zap, size: 18),
+                      label: const Text('1-Tap Connect to Desktop (192.168.100.30)', style: TextStyle(fontWeight: FontWeight.w700)),
+                      onPressed: () {
+                        _processScannedPayload('{"host":"192.168.100.30","port":8888,"organization":"GIFTMART SUPERMARKET","branch":"KERICHO"}');
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        side: const BorderSide(color: Colors.white24),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      icon: const Icon(LucideIcons.refreshCw, size: 16),
+                      label: const Text('Retry Camera'),
+                      onPressed: () {
+                        _scannerController.start();
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
         ),
 
         // Scanning Target Viewfinder
