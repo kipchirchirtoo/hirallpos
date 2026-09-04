@@ -1,0 +1,1373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hirall — Enterprise POS & Merchant Management Platform</title>
+  <!-- Google Fonts: Newsreader (Editorial Serif), Plus Jakarta Sans (UI), JetBrains Mono (Data/Badges) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- ========================================================================= -->
+  <!-- TOP NAVIGATION                                                            -->
+  <!-- ========================================================================= -->
+  <header class="top-nav">
+    <div class="nav-left">
+      <div class="brand-logo" onclick="navigateTo('login')">
+        <div class="logo-icon"><i data-lucide="shield-check"></i></div>
+        <span class="logo-title">HIRALL</span>
+      </div>
+    </div>
+
+    <div class="nav-right">
+      <!-- Theme Mode Toggle (Light Grey Primary / Dark Theme) -->
+      <button class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleTheme()" title="Toggle Light / Dark Mode">
+        <i data-lucide="moon" id="themeIcon" style="width: 15px; height: 15px;"></i>
+      </button>
+
+      <!-- Unauthenticated Navigation Links -->
+      <div class="auth-nav-links" id="unauthNav">
+        <button class="nav-btn" id="navLoginBtn" onclick="navigateTo('login')">
+          Sign In
+        </button>
+        <button class="nav-btn-primary" id="navSignupBtn" onclick="navigateTo('signup')">
+          Create Workspace <i data-lucide="arrow-right" style="width: 14px; height: 14px;"></i>
+        </button>
+      </div>
+
+      <!-- Authenticated User Dropdown Pill -->
+      <div class="user-pill" id="authNavPill" style="display: none;">
+        <button class="nav-btn active-dash-btn" onclick="navigateTo('admin')">
+          <i data-lucide="layout-dashboard" style="width: 14px; height: 14px;"></i> Admin Console
+        </button>
+        <div class="user-avatar" id="navUserAvatar">AK</div>
+        <div class="user-info">
+          <span class="user-name" id="navUserName">Merchant Admin</span>
+          <span class="user-role" id="navUserRole">Super-Admin</span>
+        </div>
+        <button class="btn-icon" onclick="handleLogout()" title="Sign Out">
+          <i data-lucide="log-out" style="width: 14px; height: 14px;"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ========================================================================= -->
+  <!-- MAIN APP CONTAINER                                                        -->
+  <!-- ========================================================================= -->
+  <main class="main-container">
+
+    <!-- ======================================================================= -->
+    <!-- VIEW 1: SIGN IN / LOGIN PAGE (WITH PASSWORD + MFA / TOTP BOXES)         -->
+    <!-- ======================================================================= -->
+    <section id="loginSection" class="view-section active">
+      <div class="auth-split-wrapper">
+        <!-- Left Side: Visual Pitch & Ambient Blobs -->
+        <div class="auth-visual-side">
+          <div class="ambient-blob-a" aria-hidden="true"></div>
+          <div class="ambient-blob-b" aria-hidden="true"></div>
+          <div class="ambient-dot-grid" aria-hidden="true"></div>
+
+          <div class="visual-content">
+            <span class="hero-tag">
+              <i data-lucide="lock" style="width: 12px; height: 12px;"></i>
+              SECURE MERCHANT ACCESS
+            </span>
+            <h1 class="visual-heading">Your multi-branch POS command centre.</h1>
+            <p class="visual-body">Sign in to manage till lanes, master product catalogs, live cashier shifts, and daily M-Pesa reconciliations.</p>
+            
+            <div class="visual-badge-card">
+              <div class="visual-badge-header">
+                <i data-lucide="shield-check" style="width: 16px; height: 16px; color: var(--primary);"></i>
+                <span class="text-micro" style="color: var(--primary);">BANK-GRADE DATA PRIVACY</span>
+              </div>
+              <p>Every transaction, branch audit, and financial report is securely protected with automated real-time cloud backup.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Side: Login Form / MFA Step-up -->
+        <div class="auth-form-side">
+          <div class="auth-card">
+            
+            <!-- STAGE 1: Standard Password Login -->
+            <div id="loginStepCredentials">
+              <div class="card-header">
+                <h2 class="card-title">Sign in to your account</h2>
+                <p class="card-subtitle">Enter your organization email and master password</p>
+              </div>
+
+              <!-- Auth Method Tabs -->
+              <div class="auth-method-tabs">
+                <button class="method-tab active" id="tabMethodPassword" onclick="setLoginMethod('password')">
+                  <i data-lucide="key-round" style="width: 13px; height: 13px;"></i> Password
+                </button>
+                <button class="method-tab" id="tabMethodOtp" onclick="setLoginMethod('otp')">
+                  <i data-lucide="smartphone" style="width: 13px; height: 13px;"></i> One-Time Code
+                </button>
+              </div>
+
+              <form id="formLogin" onsubmit="handleLoginSubmit(event)">
+                <div class="form-group">
+                  <label for="loginEmail">Work Email Address <span class="req">*</span></label>
+                  <input type="email" id="loginEmail" placeholder="name@company.co.ke" required autocomplete="email">
+                </div>
+
+                <div class="form-group" id="groupPassword">
+                  <div class="label-row">
+                    <label for="loginPassword">Password <span class="req">*</span></label>
+                    <a href="javascript:void(0)" onclick="alert('Password reset link will be sent to your work email.')" class="link-muted">Forgot password?</a>
+                  </div>
+                  <div class="password-input-wrap">
+                    <input type="password" id="loginPassword" placeholder="••••••••••••" required autocomplete="current-password">
+                    <button type="button" class="btn-toggle-eye" onclick="togglePasswordVisibility('loginPassword', this)">
+                      <i data-lucide="eye" style="width: 16px; height: 16px;"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <div id="loginError" class="error-alert" style="display: none;"></div>
+
+                <button type="submit" class="btn-submit-auth" id="btnLoginSubmit">
+                  <span>Sign In</span>
+                  <i data-lucide="arrow-right" style="width: 16px; height: 16px;"></i>
+                </button>
+              </form>
+
+              <div class="auth-card-footer">
+                <span class="footer-text">Don't have a workspace yet?</span>
+                <button type="button" class="link-primary" onclick="navigateTo('signup')">Create new organization</button>
+              </div>
+            </div>
+
+            <!-- STAGE 2: Multi-Factor Authentication (MFA / TOTP 6-Digit Verification) -->
+            <div id="loginStepMfa" style="display: none;">
+              <div class="card-header">
+                <div class="mfa-icon-badge">
+                  <i data-lucide="smartphone" style="width: 22px; height: 22px; color: var(--primary);"></i>
+                </div>
+                <h2 class="card-title">Two-Factor Authentication</h2>
+                <p class="card-subtitle">Enter the 6-digit verification code from your authenticator app (Google Authenticator, Microsoft Authenticator, or 1Password).</p>
+              </div>
+
+              <!-- 6-Digit OTP Box Grid (SacComply Design) -->
+              <div class="otp-container">
+                <div class="otp-boxes-grid" id="otpBoxesGrid">
+                  <input type="text" maxlength="1" class="otp-input" id="otp0" inputmode="numeric" autofocus oninput="handleOtpInput(0, this)" onkeydown="handleOtpKeyDown(0, event)" onpaste="handleOtpPaste(event)">
+                  <input type="text" maxlength="1" class="otp-input" id="otp1" inputmode="numeric" oninput="handleOtpInput(1, this)" onkeydown="handleOtpKeyDown(1, event)">
+                  <input type="text" maxlength="1" class="otp-input" id="otp2" inputmode="numeric" oninput="handleOtpInput(2, this)" onkeydown="handleOtpKeyDown(2, event)">
+                  <input type="text" maxlength="1" class="otp-input" id="otp3" inputmode="numeric" oninput="handleOtpInput(3, this)" onkeydown="handleOtpKeyDown(3, event)">
+                  <input type="text" maxlength="1" class="otp-input" id="otp4" inputmode="numeric" oninput="handleOtpInput(4, this)" onkeydown="handleOtpKeyDown(4, event)">
+                  <input type="text" maxlength="1" class="otp-input" id="otp5" inputmode="numeric" oninput="handleOtpInput(5, this)" onkeydown="handleOtpKeyDown(5, event)">
+                </div>
+              </div>
+
+              <div id="mfaError" class="error-alert" style="display: none;"></div>
+
+              <button type="button" class="btn-submit-auth" id="btnVerifyMfa" onclick="verifyMfaCode()">
+                <span>Verify & Unlock Portal</span>
+                <i data-lucide="check-circle-2" style="width: 16px; height: 16px;"></i>
+              </button>
+
+              <div class="mfa-recovery-wrap">
+                <button type="button" class="link-muted text-micro" onclick="toggleRecoveryMode()">
+                  <i data-lucide="key-round" style="width: 12px; height: 12px; display: inline;"></i> Having trouble? Use a backup recovery code
+                </button>
+
+                <div id="recoveryInputBox" style="display: none; margin-top: 12px;">
+                  <input type="text" id="recoveryCode" placeholder="XXXX-XXXX-XXXX-XXXX" class="font-mono" style="text-align: center;">
+                  <button type="button" class="btn-secondary btn-sm" style="width: 100%; margin-top: 8px;" onclick="verifyRecoveryCode()">Submit Recovery Code</button>
+                </div>
+              </div>
+
+              <div class="auth-card-footer">
+                <button type="button" class="link-muted" onclick="backToCredentials()">
+                  <i data-lucide="arrow-left" style="width: 12px; height: 12px; display: inline;"></i> Back to email & password
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================================= -->
+    <!-- VIEW 2: SIGNUP & MERCHANT ONBOARDING WIZARD (SACCOMPLY DESIGN)           -->
+    <!-- ======================================================================= -->
+    <section id="signupSection" class="view-section">
+      <div class="onboarding-wrapper">
+        <!-- Left Side: Interactive Step Stepper & Ambient Visuals -->
+        <aside class="onboarding-sidebar">
+          <div class="ambient-blob-a" aria-hidden="true"></div>
+          <div class="ambient-blob-b" aria-hidden="true"></div>
+          <div class="ambient-dot-grid" aria-hidden="true"></div>
+
+          <div class="sidebar-header">
+            <span class="hero-tag">
+              <i data-lucide="sparkles" style="width: 12px; height: 12px;"></i>
+              ORGANIZATION REGISTRATION
+            </span>
+            <h2>Create your merchant workspace.</h2>
+            <p>Deploy multi-lane registers, cloud inventory & M-Pesa STK push with enterprise-grade data security.</p>
+          </div>
+
+          <div class="stepper-list">
+            <div class="step-item active" id="stepNav1" onclick="goToStep(1)">
+              <div class="step-indicator">1</div>
+              <div class="step-meta">
+                <span class="step-title">Business Profile</span>
+                <span class="step-desc">Company & Industry Model</span>
+              </div>
+            </div>
+            <div class="step-item" id="stepNav2" onclick="goToStep(2)">
+              <div class="step-indicator">2</div>
+              <div class="step-meta">
+                <span class="step-title">Central HQ & Tills</span>
+                <span class="step-desc">Headquarters & Register Lanes</span>
+              </div>
+            </div>
+            <div class="step-item" id="stepNav3" onclick="goToStep(3)">
+              <div class="step-indicator">3</div>
+              <div class="step-meta">
+                <span class="step-title">M-Pesa & Tax Setup</span>
+                <span class="step-desc">Paybill, Till & KRA PIN</span>
+              </div>
+            </div>
+            <div class="step-item" id="stepNav4" onclick="goToStep(4)">
+              <div class="step-indicator">4</div>
+              <div class="step-meta">
+                <span class="step-title">Master Credentials</span>
+                <span class="step-desc">Owner Account & Station PIN</span>
+              </div>
+            </div>
+            <div class="step-item" id="stepNav5">
+              <div class="step-indicator">5</div>
+              <div class="step-meta">
+                <span class="step-title">Terminal Activation</span>
+                <span class="step-desc">License Key & Desktop Setup</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="sidebar-visual-card">
+            <div class="visual-top-row">
+              <span class="visual-badge">PRO 14-DAY TRIAL</span>
+              <i data-lucide="shield-check" style="width: 14px; height: 14px; color: var(--primary);"></i>
+            </div>
+            <p>Full access to Supermarket, Storekeeping, Accounting, and Multi-Branch tools. No credit card required.</p>
+          </div>
+        </aside>
+
+        <!-- Right Side: Step Card Form Canvas -->
+        <div class="onboarding-content">
+          <div class="wizard-card">
+            
+            <!-- STEP 1: BUSINESS PROFILE -->
+            <div class="wizard-step active" id="stepCard1">
+              <div class="step-header">
+                <h3>Tell us about your organization</h3>
+                <p>Select your primary industry to configure specialized checkout workflows and inventory models.</p>
+              </div>
+
+              <div class="form-grid">
+                <div class="form-group span-2">
+                  <label for="orgName">Organization / Trading Name <span class="req">*</span></label>
+                  <input type="text" id="orgName" placeholder="e.g. Greenfield Retail Stores Ltd" required>
+                </div>
+
+                <div class="form-group">
+                  <label for="orgSubdomain">Workspace Subdomain <span class="req">*</span></label>
+                  <div class="input-addon">
+                    <input type="text" id="orgSubdomain" placeholder="greenfield" required>
+                    <span class="addon-text">.hirall.co</span>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="orgPhone">Primary Contact Phone <span class="req">*</span></label>
+                  <input type="tel" id="orgPhone" placeholder="e.g. +254 712 345 678" required>
+                </div>
+              </div>
+
+              <div class="industry-selector-header">
+                <label>Select Industry Specialization <span class="req">*</span></label>
+                <span class="text-micro" style="color: var(--primary);">AUTO-CONFIGURES WORKFLOWS</span>
+              </div>
+
+              <div class="industry-grid">
+                <label class="industry-card selected">
+                  <input type="radio" name="businessType" value="supermarket" checked>
+                  <div class="industry-icon"><i data-lucide="shopping-cart"></i></div>
+                  <div class="industry-title">Supermarket</div>
+                  <div class="industry-desc">Barcode scanning, multi-lane checkout, bulk crates & perishable expiry tracking</div>
+                </label>
+
+                <label class="industry-card">
+                  <input type="radio" name="businessType" value="retail">
+                  <div class="industry-icon"><i data-lucide="store"></i></div>
+                  <div class="industry-title">Retail & Boutique</div>
+                  <div class="industry-desc">Product variants, size/color, warranty serials & customer loyalty points</div>
+                </label>
+
+                <label class="industry-card">
+                  <input type="radio" name="businessType" value="restaurant">
+                  <div class="industry-icon"><i data-lucide="utensils"></i></div>
+                  <div class="industry-title">Restaurant & Café</div>
+                  <div class="industry-desc">Dining table floor plan, KOT kitchen printing & course firing</div>
+                </label>
+
+                <label class="industry-card">
+                  <input type="radio" name="businessType" value="bar_club">
+                  <div class="industry-icon"><i data-lucide="wine"></i></div>
+                  <div class="industry-title">Bar & Lounge</div>
+                  <div class="industry-desc">Speed-bar matrix, open tabs, bottle/shot inventory & happy hour rules</div>
+                </label>
+
+                <label class="industry-card">
+                  <input type="radio" name="businessType" value="laundry">
+                  <div class="industry-icon"><i data-lucide="shirt"></i></div>
+                  <div class="industry-title">Laundromat</div>
+                  <div class="industry-desc">Garment piece tagging, wash stages & pickup SMS notification</div>
+                </label>
+
+                <label class="industry-card">
+                  <input type="radio" name="businessType" value="spa">
+                  <div class="industry-icon"><i data-lucide="sparkle"></i></div>
+                  <div class="industry-title">Spa & Salon</div>
+                  <div class="industry-desc">Appointment calendar, specialist commission & treatment packages</div>
+                </label>
+              </div>
+
+              <div class="wizard-actions">
+                <button type="button" class="link-muted" onclick="navigateTo('login')">Already registered? Sign in</button>
+                <button type="button" class="btn-primary" onclick="goToStep(2)">
+                  Continue to Headquarters <i data-lucide="arrow-right"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- STEP 2: HEADQUARTERS & TILLS -->
+            <div class="wizard-step" id="stepCard2">
+              <div class="step-header">
+                <h3>Configure Central Headquarters & Till Lanes</h3>
+                <p>Set up your primary supermarket branch location and initial checkout registers.</p>
+              </div>
+
+              <div class="form-grid">
+                <div class="form-group span-2">
+                  <label for="branchName">Primary Branch / Central HQ Name <span class="req">*</span></label>
+                  <input type="text" id="branchName" placeholder="e.g. Central Branch (CBD HQ)" required>
+                </div>
+
+                <div class="form-group span-2">
+                  <label for="branchLocation">Physical Address / Street <span class="req">*</span></label>
+                  <input type="text" id="branchLocation" placeholder="e.g. Kenyatta Avenue, CBD Nairobi" required>
+                </div>
+
+                <div class="form-group">
+                  <label for="tillNumber">Primary Till Lane Identifier</label>
+                  <input type="text" id="tillNumber" placeholder="e.g. TILL-01">
+                </div>
+
+                <div class="form-group">
+                  <label for="tillCount">Number of Checkout Registers</label>
+                  <select id="tillCount">
+                    <option value="1">1 Active Register (Lane 01)</option>
+                    <option value="2">2 Registers (Lane 01, Lane 02)</option>
+                    <option value="4" selected>4 Registers (Lane 01-03 + Express Basket)</option>
+                    <option value="8">8+ Hypermarket Multi-Lane Setup</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="info-alert">
+                <i data-lucide="info"></i>
+                <div>
+                  <strong>Multi-Branch Expansion:</strong> Additional outlets (e.g. Westlands, Mombasa, Kisumu) can be configured at any time from the Cloud Console.
+                </div>
+              </div>
+
+              <div class="wizard-actions">
+                <button type="button" class="btn-secondary" onclick="goToStep(1)">
+                  <i data-lucide="arrow-left"></i> Back
+                </button>
+                <button type="button" class="btn-primary" onclick="goToStep(3)">
+                  Continue to Payments & Tax <i data-lucide="arrow-right"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- STEP 3: M-PESA & TAX SETUP -->
+            <div class="wizard-step" id="stepCard3">
+              <div class="step-header">
+                <h3>Payment Settlement & KRA Tax Integration</h3>
+                <p>Configure automated M-Pesa STK push and 16% VAT receipt compliance.</p>
+              </div>
+
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="mpesaPaybill">M-Pesa Paybill / Till Number <span class="req">*</span></label>
+                  <input type="text" id="mpesaPaybill" placeholder="e.g. 247247 or 522522" required>
+                </div>
+
+                <div class="form-group">
+                  <label for="mpesaAccount">Account Reference Prefix</label>
+                  <input type="text" id="mpesaAccount" placeholder="e.g. STORE-CBD">
+                </div>
+
+                <div class="form-group">
+                  <label for="taxPin">KRA Tax PIN</label>
+                  <input type="text" id="taxPin" placeholder="e.g. P051234567Z">
+                </div>
+
+                <div class="form-group">
+                  <label>Standard Currency</label>
+                  <input type="text" value="KES (Kenyan Shilling)" readonly class="input-readonly">
+                </div>
+
+                <div class="form-group span-2">
+                  <label for="receiptHeader">80mm Thermal Receipt Header Note</label>
+                  <textarea id="receiptHeader" rows="2" placeholder="e.g. STORE NAME - CENTRAL HQ&#10;Kenyatta Ave, Nairobi • Tel: +254700000000"></textarea>
+                </div>
+              </div>
+
+              <div class="wizard-actions">
+                <button type="button" class="btn-secondary" onclick="goToStep(2)">
+                  <i data-lucide="arrow-left"></i> Back
+                </button>
+                <button type="button" class="btn-primary" onclick="goToStep(4)">
+                  Continue to Owner Account <i data-lucide="arrow-right"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- STEP 4: MASTER OWNER ACCOUNT -->
+            <div class="wizard-step" id="stepCard4">
+              <div class="step-header">
+                <h3>Master Owner & Super-Admin Credentials</h3>
+                <p>These credentials will unlock the Cloud Admin Console and Backoffice Modules.</p>
+              </div>
+
+              <div class="form-grid">
+                <div class="form-group span-2">
+                  <label for="ownerName">Owner Full Name <span class="req">*</span></label>
+                  <input type="text" id="ownerName" placeholder="e.g. Allan Kipchirchir" required>
+                </div>
+
+                <div class="form-group">
+                  <label for="ownerEmail">Admin Login Email <span class="req">*</span></label>
+                  <input type="email" id="ownerEmail" placeholder="e.g. allan@company.co.ke" required>
+                </div>
+
+                <div class="form-group">
+                  <label for="ownerPassword">Master Password <span class="req">*</span></label>
+                  <input type="password" id="ownerPassword" placeholder="••••••••••••" required>
+                </div>
+
+                <div class="form-group">
+                  <label for="ownerPin">Supervisor 4-Digit Station PIN <span class="req">*</span></label>
+                  <input type="password" maxlength="4" id="ownerPin" placeholder="e.g. 2222" required class="font-mono">
+                </div>
+
+                <div class="form-group">
+                  <label>Security Role</label>
+                  <input type="text" value="Super-Admin & Organization Owner" readonly class="input-readonly">
+                </div>
+              </div>
+
+              <div id="onboardError" class="error-alert" style="display: none;"></div>
+
+              <div class="wizard-actions">
+                <button type="button" class="btn-secondary" onclick="goToStep(3)">
+                  <i data-lucide="arrow-left"></i> Back
+                </button>
+                <button type="button" class="btn-primary btn-emerald" id="btnSubmitOnboarding" onclick="submitOnboarding()">
+                  <i data-lucide="check-circle-2"></i> Register & Provision Organization
+                </button>
+              </div>
+            </div>
+
+            <!-- STEP 5: TERMINAL ACTIVATION & LICENSE SUCCESS -->
+            <div class="wizard-step" id="stepCard5">
+              <div class="success-banner">
+                <div class="success-icon"><i data-lucide="check"></i></div>
+                <h3>Organization Provisioned Successfully!</h3>
+                <p>Your store workspace, multi-lane register network, and cloud inventory are now active.</p>
+              </div>
+
+              <div class="license-display-box">
+                <div class="license-label">DESKTOP TERMINAL ACTIVATION KEY</div>
+                <div class="license-code-row">
+                  <span class="license-code" id="generatedLicenseKey">HIRALL-XXXX-YYYY-PRO</span>
+                  <button class="btn-copy" onclick="copyLicenseKey()">
+                    <i data-lucide="copy"></i> Copy Key
+                  </button>
+                </div>
+                <div class="license-meta">
+                  <span>Plan: <strong>Pro 14-Day Free Trial</strong></span>
+                  <span>Expires: <strong id="licenseExpiryDate">14 Days from today</strong></span>
+                  <span>Status: <strong style="color: #A7F3D0;">ACTIVE & READY</strong></span>
+                </div>
+              </div>
+
+              <div class="activation-instructions">
+                <h4><i data-lucide="monitor"></i> How to Connect Your Linux Desktop / Cashier Register:</h4>
+                <ol>
+                  <li>Launch the <strong>Hirall POS Desktop App</strong> on your supermarket till computer.</li>
+                  <li>Enter the License Activation Key <code><span id="keyPreview">HIRALL-XXXX-YYYY-PRO</span></code> on the activation screen.</li>
+                  <li>Click <strong>"Verify & Launch Terminal"</strong> — your catalog, tills, and offline database will sync automatically!</li>
+                </ol>
+              </div>
+
+              <div class="wizard-actions">
+                <button type="button" class="btn-secondary" onclick="window.print()">
+                  <i data-lucide="printer"></i> Print Setup Sheet
+                </button>
+                <button type="button" class="btn-primary" onclick="openCloudAdminConsole()">
+                  <i data-lucide="layout-dashboard"></i> Open Cloud Admin Console
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================================= -->
+    <!-- VIEW 3: CLOUD MANAGEMENT CONSOLE                                        -->
+    <!-- ======================================================================= -->
+    <section id="adminSection" class="view-section">
+      <div class="admin-layout">
+        <!-- Sidebar Navigation -->
+        <aside class="admin-sidebar">
+          <div class="org-context-card">
+            <div class="org-avatar" id="adminOrgAvatar">ORG</div>
+            <div class="org-meta">
+              <h4 id="adminOrgName">My Organization</h4>
+              <span class="badge-tier" id="adminOrgPlan">PRO TRIAL · 14 DAYS</span>
+            </div>
+          </div>
+
+          <nav class="admin-nav-menu">
+            <button class="nav-link active" onclick="switchAdminTab('overview')">
+              <i data-lucide="bar-chart-3"></i> Cloud Overview
+            </button>
+            <button class="nav-link" onclick="switchAdminTab('branches')">
+              <i data-lucide="store"></i> Branches & Till Lanes
+            </button>
+            <button class="nav-link" onclick="switchAdminTab('catalog')">
+              <i data-lucide="package"></i> Master Catalog (SKUs)
+            </button>
+            <button class="nav-link" onclick="switchAdminTab('staff')">
+              <i data-lucide="users"></i> Staff & RBAC Permissions
+            </button>
+            <button class="nav-link" onclick="switchAdminTab('receipts')" id="navLinkReceipts">
+              <i data-lucide="receipt"></i> Receipt Customizer
+            </button>
+            <button class="nav-link" onclick="switchAdminTab('licensing')">
+              <i data-lucide="key"></i> License & API Credentials
+            </button>
+          </nav>
+
+          <div class="sidebar-support">
+            <div class="support-title"><i data-lucide="life-buoy"></i> Merchant Support</div>
+            <p>Direct platform assistance line:</p>
+            <strong style="color: var(--stone-900);">+254 700 000 000</strong>
+          </div>
+        </aside>
+
+        <!-- Admin Content Area -->
+        <main class="admin-main">
+          
+          <!-- TAB 1: OVERVIEW -->
+          <div class="admin-tab active" id="tabOverview">
+            <div class="tab-header">
+              <div>
+                <h2>Enterprise Cloud Overview</h2>
+                <p>Real-time consolidated sales and till performance across your branch network.</p>
+              </div>
+              <div class="header-actions">
+                <button class="btn-secondary btn-sm" onclick="fetchLiveDashboardData()"><i data-lucide="refresh-cw"></i> Sync Metrics</button>
+                <button class="btn-primary btn-sm" onclick="switchAdminTab('branches')"><i data-lucide="plus"></i> Add Branch</button>
+              </div>
+            </div>
+
+            <!-- Top Metric Cards -->
+            <div class="kpi-grid">
+              <div class="kpi-card">
+                <div class="kpi-icon icon-green"><i data-lucide="badge-dollar-sign"></i></div>
+                <div class="kpi-body">
+                  <span class="kpi-label">TODAY'S REVENUE</span>
+                  <h3 class="kpi-value" id="kpiTotalRevenue">KES 0.00</h3>
+                  <span class="kpi-sub green"><i data-lucide="trending-up" style="width: 12px; height: 12px; display: inline;"></i> Live Sync</span>
+                </div>
+              </div>
+
+              <div class="kpi-card">
+                <div class="kpi-icon icon-blue"><i data-lucide="shopping-bag"></i></div>
+                <div class="kpi-body">
+                  <span class="kpi-label">TOTAL CHECKOUTS</span>
+                  <h3 class="kpi-value" id="kpiTotalOrders">0 Orders</h3>
+                  <span class="kpi-sub" id="kpiBranchCountSub">Across active outlets</span>
+                </div>
+              </div>
+
+              <div class="kpi-card">
+                <div class="kpi-icon icon-cyan"><i data-lucide="monitor"></i></div>
+                <div class="kpi-body">
+                  <span class="kpi-label">ACTIVE TILL LANES</span>
+                  <h3 class="kpi-value" id="kpiActiveTills">0 Online Tills</h3>
+                  <span class="kpi-sub green">All Registers Synced</span>
+                </div>
+              </div>
+
+              <div class="kpi-card">
+                <div class="kpi-icon icon-amber"><i data-lucide="clock"></i></div>
+                <div class="kpi-body">
+                  <span class="kpi-label">PRO TRIAL</span>
+                  <h3 class="kpi-value">14 Days Left</h3>
+                  <span class="kpi-sub">KES 2,500/mo after trial</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Branch Performance Breakdown -->
+            <div class="section-card">
+              <div class="card-header-row">
+                <h3>Branch Performance & Daily Breakdown</h3>
+                <span class="text-micro" style="color: var(--primary);">REAL-TIME CLOUD SYNC</span>
+              </div>
+
+              <div class="table-container">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Branch Name</th>
+                      <th>Location</th>
+                      <th>Till Lanes</th>
+                      <th>Today's Sales</th>
+                      <th>Orders</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="branchTableBody">
+                    <!-- Loaded dynamically via app.js -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB 2: BRANCHES -->
+          <div class="admin-tab" id="tabBranches">
+            <div class="tab-header">
+              <div>
+                <h2>Supermarket Branches & Register Lanes</h2>
+                <p>Manage branch physical locations, assign till numbers, and configure M-Pesa accounts.</p>
+              </div>
+              <button class="btn-primary btn-sm" onclick="promptAddBranch()"><i data-lucide="plus"></i> New Branch</button>
+            </div>
+
+            <div class="branches-grid" id="adminBranchesGrid">
+              <!-- Rendered dynamically via app.js -->
+            </div>
+          </div>
+
+          <!-- TAB 3: CATALOG -->
+          <div class="admin-tab" id="tabCatalog">
+            <div class="tab-header">
+              <div>
+                <h2>Master SKU Product Catalog</h2>
+                <p>Centralized product dictionary, barcodes (EAN-13), cost prices, and retail markups.</p>
+              </div>
+              <button class="btn-primary btn-sm" onclick="promptAddProduct()"><i data-lucide="plus"></i> Add Master Product</button>
+            </div>
+
+            <div class="section-card">
+              <div class="table-container">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Barcode / SKU</th>
+                      <th>Product Name</th>
+                      <th>Category</th>
+                      <th>Unit</th>
+                      <th>Cost Price</th>
+                      <th>Retail Price</th>
+                      <th>Margin</th>
+                    </tr>
+                  </thead>
+                  <tbody id="catalogTableBody">
+                    <!-- Rendered dynamically via app.js -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB 4: STAFF & RBAC -->
+          <div class="admin-tab" id="tabStaff">
+            <div class="tab-header">
+              <div>
+                <h2>Staff & Role-Based Access Control (RBAC)</h2>
+                <p>Manage branch access, station 4-digit PINs, and operational module permissions.</p>
+              </div>
+              <button class="btn-primary btn-sm" onclick="promptAddStaff()"><i data-lucide="user-plus"></i> Add Staff User</button>
+            </div>
+
+            <div class="section-card">
+              <div class="table-container">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Staff Member</th>
+                      <th>Assigned Branch</th>
+                      <th>Role</th>
+                      <th>Station PIN</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="staffTableBody">
+                    <!-- Rendered dynamically via app.js -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB 5: LICENSING -->
+          <div class="admin-tab" id="tabLicensing">
+            <div class="tab-header">
+              <div>
+                <h2>License Activation & API Credentials</h2>
+                <p>Manage desktop terminal license keys, cloud sync tokens, and M-Pesa Daraja credentials.</p>
+              </div>
+            </div>
+
+            <div class="form-grid">
+              <div class="form-group span-2">
+                <div class="section-card" style="margin-top: 0;">
+                  <h4 style="margin-bottom: 12px; font-size: 16px; font-weight: 500;">Active Desktop Terminal License Key</h4>
+                  <div class="license-code-row" style="background: var(--stone-900);">
+                    <span class="license-code" id="adminLicenseDisplay">HIRALL-XXXX-YYYY-PRO</span>
+                    <button class="btn-copy" onclick="copyAdminLicense()"><i data-lucide="copy"></i> Copy</button>
+                  </div>
+                  <p class="text-muted" style="margin-top: 10px; font-size: 13px;">
+                    Use this activation key on any new Linux/Windows/Android terminal to download branch config and link to your cloud store.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB 6: RECEIPT CUSTOMIZATION & DOUBLE-SIDED DESIGNER -->
+          <div class="admin-tab" id="tabReceipts">
+            <div class="tab-header">
+              <div>
+                <h2>Thermal Receipt Customizer & Layout Designer</h2>
+                <p>Upload business logo, format 80mm/58mm layouts, add holiday greetings, exact physical addresses, and double-sided marketing adverts.</p>
+              </div>
+              <div class="header-actions">
+                <button type="button" class="btn-secondary btn-sm" onclick="testPrintReceipt()"><i data-lucide="printer"></i> Test Print</button>
+                <button type="button" class="btn-primary btn-sm" onclick="saveReceiptTemplate()"><i data-lucide="save"></i> Save Template</button>
+              </div>
+            </div>
+
+            <div class="receipt-designer-layout">
+              <!-- Left Column: Controls & Configuration Cards -->
+              <div class="receipt-controls-col">
+                
+                <!-- CARD 1: STORE LOGO & BRAND IDENTITY -->
+                <div class="section-card" style="margin-top: 0;">
+                  <div class="card-header-row">
+                    <div class="card-header-title">
+                      <i data-lucide="image" class="section-icon"></i>
+                      <div>
+                        <h3>Store Logo & Brand Identity</h3>
+                        <p class="section-subtitle">Upload your company logo and define master business headers.</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="logo-upload-box">
+                    <input type="file" id="receiptLogoInput" accept="image/*" style="display: none;" onchange="handleLogoUpload(event)">
+                    <div class="logo-dropzone" id="receiptLogoDropzone" onclick="document.getElementById('receiptLogoInput').click()">
+                      <div id="logoUploadPrompt" class="logo-upload-prompt">
+                        <i data-lucide="upload-cloud" style="width: 28px; height: 28px; color: var(--primary);"></i>
+                        <span class="logo-prompt-title">Click or drag & drop business logo here</span>
+                        <span class="logo-prompt-sub">Supports PNG, JPG, SVG • Recommended: Transparent PNG (max 500KB)</span>
+                      </div>
+                      <div id="logoPreviewContainer" class="logo-preview-container" style="display: none;">
+                        <img id="receiptLogoImgPreview" class="logo-preview-img" alt="Store Logo Preview">
+                        <div class="logo-meta-controls">
+                          <span id="logoFileName" class="logo-file-name">logo.png</span>
+                          <div class="logo-btn-row">
+                            <button type="button" class="btn-xs btn-secondary" onclick="event.stopPropagation(); document.getElementById('receiptLogoInput').click();">Replace</button>
+                            <button type="button" class="btn-xs btn-danger" onclick="event.stopPropagation(); removeReceiptLogo();">Remove</button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="logo-options-row" style="margin-top: 14px;">
+                      <div class="form-group" style="margin-bottom: 0;">
+                        <label for="rcptLogoWidth" style="font-size: 11px;">Logo Display Width (<span id="logoWidthLabel">160px</span>)</label>
+                        <input type="range" id="rcptLogoWidth" min="80" max="240" value="160" oninput="updateLogoWidth(this.value)" class="slider-control">
+                      </div>
+                      <div class="checkbox-group" style="align-self: flex-end;">
+                        <label class="checkbox-label" style="font-size: 12px;">
+                          <input type="checkbox" id="rcptLogoMonochrome" checked onchange="updateReceiptPreview()">
+                          <span>High-Contrast Thermal Monochrome</span>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="form-grid" style="margin-top: 16px;">
+                    <div class="form-group span-2">
+                      <label for="rcptStoreName">Business / Trading Name <span class="req">*</span></label>
+                      <input type="text" id="rcptStoreName" value="COMMERCIAL ENTERPRISE LTD" oninput="updateReceiptPreview()">
+                    </div>
+                    <div class="form-group">
+                      <label for="rcptBranchTagline">Outlet / Tagline Note</label>
+                      <input type="text" id="rcptBranchTagline" value="Main Branch & Store" oninput="updateReceiptPreview()">
+                    </div>
+                    <div class="form-group">
+                      <label for="rcptTaxPin">KRA Tax PIN / Registration</label>
+                      <input type="text" id="rcptTaxPin" value="P050000000X" oninput="updateReceiptPreview()">
+                    </div>
+                    <div class="form-group span-2">
+                      <label for="rcptEtrNote">ETR / Fiscal Compliance Header</label>
+                      <input type="text" id="rcptEtrNote" value="KRA eTIMS VALIDATED FISCAL RECEIPT" oninput="updateReceiptPreview()">
+                    </div>
+                  </div>
+                </div>
+
+                <!-- CARD 2: PHYSICAL ADDRESS & CONTACT INFO -->
+                <div class="section-card">
+                  <div class="card-header-row">
+                    <div class="card-header-title">
+                      <i data-lucide="map-pin" class="section-icon"></i>
+                      <div>
+                        <h3>Exact Physical Address & Contact Information</h3>
+                        <p class="section-subtitle">Store location details displayed under the receipt header.</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="form-grid">
+                    <div class="form-group">
+                      <label for="rcptBuilding">Building, Floor & Wing</label>
+                      <input type="text" id="rcptBuilding" value="Commercial Plaza, Ground Floor" oninput="updateReceiptPreview()">
+                    </div>
+                    <div class="form-group">
+                      <label for="rcptStreet">Street / Avenue / Road <span class="req">*</span></label>
+                      <input type="text" id="rcptStreet" value="Kenyatta Avenue, CBD" oninput="updateReceiptPreview()">
+                    </div>
+                    <div class="form-group">
+                      <label for="rcptCity">City & Postal Address</label>
+                      <input type="text" id="rcptCity" value="Nairobi, P.O. Box 00100" oninput="updateReceiptPreview()">
+                    </div>
+                    <div class="form-group">
+                      <label for="rcptPhone">Customer Care Tel / WhatsApp</label>
+                      <input type="text" id="rcptPhone" value="+254 700 000 000 / 020 000 0000" oninput="updateReceiptPreview()">
+                    </div>
+                    <div class="form-group span-2">
+                      <label for="rcptEmailWeb">Official Email & Website</label>
+                      <input type="text" id="rcptEmailWeb" value="info@company.co.ke • www.company.co.ke" oninput="updateReceiptPreview()">
+                    </div>
+                  </div>
+                </div>
+
+                <!-- CARD 3: FESTIVE & HOLIDAY SEASON GREETINGS -->
+                <div class="section-card">
+                  <div class="card-header-row">
+                    <div class="card-header-title">
+                      <i data-lucide="sparkles" class="section-icon" style="color: var(--clay);"></i>
+                      <div>
+                        <h3>Festive & Holiday Greetings</h3>
+                        <p class="section-subtitle">Add custom seasonal greetings, holiday wishes, and decorative banners.</p>
+                      </div>
+                    </div>
+                    <div class="toggle-switch-wrapper">
+                      <label class="switch">
+                        <input type="checkbox" id="rcptFestiveEnabled" checked onchange="updateReceiptPreview()">
+                        <span class="slider round"></span>
+                      </label>
+                      <span class="toggle-label">Active</span>
+                    </div>
+                  </div>
+
+                  <div class="form-grid">
+                    <div class="form-group span-2">
+                      <label for="rcptFestivePreset">Quick Holiday Preset</label>
+                      <select id="rcptFestivePreset" onchange="applyHolidayPreset(this.value)">
+                        <option value="christmas">🎄 Christmas & New Year Special</option>
+                        <option value="eid">🌙 Eid Mubarak & Islamic Holidays</option>
+                        <option value="jamhuri">🇰🇪 Kenya National Celebrations (Jamhuri / Madaraka)</option>
+                        <option value="blackfriday">🔥 Black Friday Mega Savings</option>
+                        <option value="easter">🐣 Easter Blessings & Spring Deals</option>
+                        <option value="custom">✏️ Custom Seasonal Message</option>
+                      </select>
+                    </div>
+                    <div class="form-group span-2">
+                      <label for="rcptFestiveHeader">Festive Top Banner Greeting</label>
+                      <input type="text" id="rcptFestiveHeader" value="🎄 MERRY CHRISTMAS & HAPPY NEW YEAR 2026! 🎁" oninput="updateReceiptPreview()">
+                    </div>
+                    <div class="form-group span-2">
+                      <label for="rcptFestiveFooter">Festive Footer Blessing / Slogan</label>
+                      <input type="text" id="rcptFestiveFooter" value="Wishing you and your family joy, peace, and abundance this holiday season!" oninput="updateReceiptPreview()">
+                    </div>
+                    <div class="form-group">
+                      <label for="rcptFestiveBorder">Festive Border Embellishment</label>
+                      <select id="rcptFestiveBorder" onchange="updateReceiptPreview()">
+                        <option value="icons">🎄 🎁 🎄 Festive Icons Banner</option>
+                        <option value="stars">★ ★ ★ ★ Star Ribbon</option>
+                        <option value="snowflakes">❄ ❅ ❄ Snowflake Border</option>
+                        <option value="dashes">- - - - Classic Dashes</option>
+                        <option value="none">None (Plain Text)</option>
+                      </select>
+                    </div>
+                    <div class="form-group">
+                      <label for="rcptFestivePosition">Greeting Placement</label>
+                      <select id="rcptFestivePosition" onchange="updateReceiptPreview()">
+                        <option value="both">Top Header & Bottom Footer</option>
+                        <option value="top">Top Header Only (Below Logo)</option>
+                        <option value="bottom">Bottom Footer Only (Above Barcode)</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- CARD 4: FRONT OF RECEIPT LAYOUT ADJUSTMENTS -->
+                <div class="section-card">
+                  <div class="card-header-row">
+                    <div class="card-header-title">
+                      <i data-lucide="file-text" class="section-icon"></i>
+                      <div>
+                        <h3>Front of Receipt — Format & Itemization</h3>
+                        <p class="section-subtitle">Paper width, typography, itemized line columns, and bottom policies.</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="form-grid">
+                    <div class="form-group">
+                      <label for="rcptPaperWidth">Thermal Paper Roll Width</label>
+                      <select id="rcptPaperWidth" onchange="updateReceiptPreview()">
+                        <option value="80mm" selected>80mm Standard POS Thermal Roll</option>
+                        <option value="58mm">58mm Compact Mobile POS Roll</option>
+                      </select>
+                    </div>
+                    <div class="form-group">
+                      <label for="rcptHeaderAlign">Header Text Alignment</label>
+                      <select id="rcptHeaderAlign" onchange="updateReceiptPreview()">
+                        <option value="center" selected>Center Aligned (Standard)</option>
+                        <option value="left">Left Aligned</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="options-checklist-grid" style="margin-top: 10px;">
+                    <label class="checkbox-pill">
+                      <input type="checkbox" id="rcptShowLogo" checked onchange="updateReceiptPreview()">
+                      <span>Show Store Logo</span>
+                    </label>
+                    <label class="checkbox-pill">
+                      <input type="checkbox" id="rcptShowAddress" checked onchange="updateReceiptPreview()">
+                      <span>Show Physical Address</span>
+                    </label>
+                    <label class="checkbox-pill">
+                      <input type="checkbox" id="rcptShowContact" checked onchange="updateReceiptPreview()">
+                      <span>Show Phone & Email</span>
+                    </label>
+                    <label class="checkbox-pill">
+                      <input type="checkbox" id="rcptShowTillStaff" checked onchange="updateReceiptPreview()">
+                      <span>Show Till ID & Cashier Name</span>
+                    </label>
+                    <label class="checkbox-pill">
+                      <input type="checkbox" id="rcptShowVatBreakdown" checked onchange="updateReceiptPreview()">
+                      <span>Show 16% Itemized VAT Tax</span>
+                    </label>
+                    <label class="checkbox-pill">
+                      <input type="checkbox" id="rcptShowMpesaCode" checked onchange="updateReceiptPreview()">
+                      <span>Show M-Pesa Transaction Ref</span>
+                    </label>
+                    <label class="checkbox-pill">
+                      <input type="checkbox" id="rcptShowBarcode" checked onchange="updateReceiptPreview()">
+                      <span>Show Footer 1D Barcode</span>
+                    </label>
+                    <label class="checkbox-pill">
+                      <input type="checkbox" id="rcptShowPolicy" checked onchange="updateReceiptPreview()">
+                      <span>Show Front Return Policy</span>
+                    </label>
+                  </div>
+
+                  <div class="form-grid" style="margin-top: 16px;">
+                    <div class="form-group span-2">
+                      <label for="rcptReturnPolicy">Front Return & Exchange Policy Notice</label>
+                      <textarea id="rcptReturnPolicy" rows="2" oninput="updateReceiptPreview()">Goods once sold can be exchanged within 7 days with original receipt. Non-perishables only. No cash refunds.</textarea>
+                    </div>
+                    <div class="form-group span-2">
+                      <label for="rcptThankYouNote">Front Thank You Slogan</label>
+                      <input type="text" id="rcptThankYouNote" value="Thank you for shopping with us! We appreciate your loyalty." oninput="updateReceiptPreview()">
+                    </div>
+                  </div>
+                </div>
+
+                <!-- CARD 5: BACK OF RECEIPT CUSTOMIZATION & ADVERTISEMENTS -->
+                <div class="section-card">
+                  <div class="card-header-row">
+                    <div class="card-header-title">
+                      <i data-lucide="layers" class="section-icon" style="color: var(--primary);"></i>
+                      <div>
+                        <h3>Back of Receipt — Terms, Vouchers & Adverts</h3>
+                        <p class="section-subtitle">Double-sided thermal printing for terms of sale, discount vouchers, survey QR, and partner advertising.</p>
+                      </div>
+                    </div>
+                    <div class="toggle-switch-wrapper">
+                      <label class="switch">
+                        <input type="checkbox" id="rcptDoubleSidedEnabled" checked onchange="updateReceiptPreview()">
+                        <span class="slider round"></span>
+                      </label>
+                      <span class="toggle-label">Double-Sided</span>
+                    </div>
+                  </div>
+
+                  <div class="form-grid">
+                    <div class="form-group span-2">
+                      <label for="rcptBackTerms">Back Terms & Conditions of Sale</label>
+                      <textarea id="rcptBackTerms" rows="3" oninput="updateReceiptPreview()">1. Retain receipt for proof of purchase and warranty claims.
+2. Electrical appliances carry a 12-month manufacturer warranty.
+3. Fresh butchery, dairy & bakery items must be inspected upon purchase.
+4. Promotional items and discounted clearance goods are final sale.</textarea>
+                    </div>
+                  </div>
+
+                  <!-- BACK: PROMOTIONAL DISCOUNT VOUCHER -->
+                  <div class="sub-feature-card">
+                    <div class="card-header-row" style="margin-bottom: 12px;">
+                      <div class="card-header-title">
+                        <i data-lucide="ticket" style="width: 16px; height: 16px; color: var(--clay);"></i>
+                        <h4 style="font-size: 14px; font-weight: 700;">Promotional Coupon & Discount Voucher</h4>
+                      </div>
+                      <label class="switch switch-sm">
+                        <input type="checkbox" id="rcptShowVoucher" checked onchange="updateReceiptPreview()">
+                        <span class="slider round"></span>
+                      </label>
+                    </div>
+
+                    <div class="form-grid">
+                      <div class="form-group">
+                        <label for="rcptVoucherTitle">Coupon Headline</label>
+                        <input type="text" id="rcptVoucherTitle" value="🎁 GET 10% OFF YOUR NEXT VISIT!" oninput="updateReceiptPreview()">
+                      </div>
+                      <div class="form-group">
+                        <label for="rcptVoucherCode">Promo Voucher Code</label>
+                        <input type="text" id="rcptVoucherCode" value="SAVE-10-DISCOUNT" oninput="updateReceiptPreview()">
+                      </div>
+                      <div class="form-group span-2">
+                        <label for="rcptVoucherDetails">Voucher Terms & Expiry</label>
+                        <input type="text" id="rcptVoucherDetails" value="Valid for 30 days on purchases over KES 2,500. Present this receipt." oninput="updateReceiptPreview()">
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- BACK: CUSTOMER SATISFACTION SURVEY QR -->
+                  <div class="sub-feature-card" style="margin-top: 14px;">
+                    <div class="card-header-row" style="margin-bottom: 12px;">
+                      <div class="card-header-title">
+                        <i data-lucide="qr-code" style="width: 16px; height: 16px; color: var(--primary);"></i>
+                        <h4 style="font-size: 14px; font-weight: 700;">Customer Loyalty & Survey QR Code</h4>
+                      </div>
+                      <label class="switch switch-sm">
+                        <input type="checkbox" id="rcptShowSurvey" checked onchange="updateReceiptPreview()">
+                        <span class="slider round"></span>
+                      </label>
+                    </div>
+
+                    <div class="form-grid">
+                      <div class="form-group">
+                        <label for="rcptSurveyCallout">Survey Invitation Callout</label>
+                        <input type="text" id="rcptSurveyCallout" value="Rate your cashier & win KES 5,000 grocery vouchers!" oninput="updateReceiptPreview()">
+                      </div>
+                      <div class="form-group">
+                        <label for="rcptSurveyLink">Survey / Rating URL</label>
+                        <input type="text" id="rcptSurveyLink" value="https://feedback.hirallpos.com" oninput="updateReceiptPreview()">
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- BACK: ADVERTISEMENT & SPONSOR INFORMATION -->
+                  <div class="sub-feature-card" style="margin-top: 14px;">
+                    <div class="card-header-row" style="margin-bottom: 12px;">
+                      <div class="card-header-title">
+                        <i data-lucide="megaphone" style="width: 16px; height: 16px; color: #0EA5E9;"></i>
+                        <h4 style="font-size: 14px; font-weight: 700;">Marketing Advert & Partner Sponsor Space</h4>
+                      </div>
+                      <label class="switch switch-sm">
+                        <input type="checkbox" id="rcptShowAdvert" checked onchange="updateReceiptPreview()">
+                        <span class="slider round"></span>
+                      </label>
+                    </div>
+
+                    <div class="form-grid">
+                      <div class="form-group span-2">
+                        <label for="rcptAdvertTitle">Advert / Promo Headline</label>
+                        <input type="text" id="rcptAdvertTitle" value="⚡ FASTEST 5G HOME FIBRE AVAILABLE IN-STORE!" oninput="updateReceiptPreview()">
+                      </div>
+                      <div class="form-group span-2">
+                        <label for="rcptAdvertBody">Advert Body Details</label>
+                        <textarea id="rcptAdvertBody" rows="2" oninput="updateReceiptPreview()">Sign up at Customer Service today. Free installation & 1st month free router.</textarea>
+                      </div>
+                      <div class="form-group span-2">
+                        <label for="rcptSocialHandles">Social Media & Loyalty Channel Handles</label>
+                        <input type="text" id="rcptSocialHandles" value="Follow our official social pages for weekly flash deals" oninput="updateReceiptPreview()">
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+
+              </div>
+
+              <!-- Right Column: Live Interactive Thermal Receipt Preview -->
+              <div class="receipt-preview-col">
+                <div class="preview-sticky-card">
+                  
+                  <div class="preview-header-bar">
+                    <div class="preview-title-row">
+                      <span class="preview-badge"><i data-lucide="eye" style="width: 12px; height: 12px; display: inline;"></i> LIVE THERMAL PREVIEW</span>
+                      <span id="previewPaperWidthBadge" class="paper-width-tag">80mm Roll</span>
+                    </div>
+
+                    <!-- Front / Back / Split Mode Tabs -->
+                    <div class="receipt-view-tabs">
+                      <button type="button" class="rcpt-tab-btn active" id="tabBtnFront" onclick="switchReceiptPreviewSide('front')">
+                        <i data-lucide="file-text" style="width: 13px; height: 13px;"></i> Front
+                      </button>
+                      <button type="button" class="rcpt-tab-btn" id="tabBtnBack" onclick="switchReceiptPreviewSide('back')">
+                        <i data-lucide="layers" style="width: 13px; height: 13px;"></i> Back (Duplex)
+                      </button>
+                      <button type="button" class="rcpt-tab-btn" id="tabBtnBoth" onclick="switchReceiptPreviewSide('both')">
+                        <i data-lucide="columns-2" style="width: 13px; height: 13px;"></i> Both
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Thermal Receipt Container -->
+                  <div class="thermal-paper-viewport" id="thermalPaperViewport">
+                    
+                    <!-- FRONT SIDE PAPER -->
+                    <div class="thermal-paper front-paper" id="frontThermalPaper">
+                      <div class="paper-tear-edge top-tear"></div>
+
+                      <div class="thermal-content" id="frontThermalContent">
+                        <!-- Rendered dynamically by app.js -->
+                      </div>
+
+                      <div class="paper-tear-edge bottom-tear"></div>
+                    </div>
+
+                    <!-- BACK SIDE PAPER -->
+                    <div class="thermal-paper back-paper" id="backThermalPaper" style="display: none;">
+                      <div class="paper-tear-edge top-tear"></div>
+
+                      <div class="thermal-content" id="backThermalContent">
+                        <!-- Rendered dynamically by app.js -->
+                      </div>
+
+                      <div class="paper-tear-edge bottom-tear"></div>
+                    </div>
+
+                  </div>
+
+                  <div class="preview-footer-actions">
+                    <button type="button" class="btn-secondary btn-sm" onclick="testPrintReceipt()"><i data-lucide="printer"></i> Test Print</button>
+                    <button type="button" class="btn-primary btn-sm" onclick="saveReceiptTemplate()"><i data-lucide="check"></i> Save Changes</button>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </main>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- MODAL: ADD STAFF USER -->
+  <div class="modal-backdrop" id="addStaffModal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title">Add Staff & POS Station User</h3>
+          <p class="modal-subtitle">Create user account with station PIN and operational role permissions.</p>
+        </div>
+        <button type="button" class="modal-close-btn" onclick="closeModal('addStaffModal')"><i data-lucide="x"></i></button>
+      </div>
+      <form onsubmit="submitAddStaff(event)">
+        <div class="modal-body">
+          <div class="form-grid">
+            <div class="form-group span-2">
+              <label for="staffFullName">Full Name <span class="req">*</span></label>
+              <input type="text" id="staffFullName" placeholder="e.g. John K. Cheruiyot" required>
+            </div>
+            <div class="form-group span-2">
+              <label for="staffEmail">Work Email Address <span class="req">*</span></label>
+              <input type="email" id="staffEmail" placeholder="e.g. john@giftmart.co.ke" required>
+            </div>
+            <div class="form-group">
+              <label for="staffPassword">Web Portal Password <span class="req">*</span></label>
+              <input type="password" id="staffPassword" placeholder="Min. 8 characters" required minlength="6">
+            </div>
+            <div class="form-group">
+              <label for="staffPin">4-Digit Station PIN <span class="req">*</span></label>
+              <div class="input-addon">
+                <input type="text" id="staffPin" placeholder="e.g. 5521" maxlength="4" pattern="\d{4}" required style="font-family: var(--font-mono); font-weight: 700; letter-spacing: 2px;">
+                <button type="button" class="btn-secondary btn-sm" onclick="generateRandomPin()" style="padding: 6px 10px; font-size: 11px;">Generate</button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="staffRole">Operational Role <span class="req">*</span></label>
+              <select id="staffRole" required>
+                <option value="cashier">Cashier (Till Register Only)</option>
+                <option value="storekeeper">Storekeeper (Inventory & Stock)</option>
+                <option value="accountant">Accountant (Till Audit & P&L)</option>
+                <option value="branch_manager">Branch Manager (Full Branch Ops)</option>
+                <option value="waiter">Waiter (Table & Orders)</option>
+                <option value="owner">Co-Owner / Administrator</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="staffBranch">Assigned Branch <span class="req">*</span></label>
+              <select id="staffBranch" required>
+                <!-- Populated dynamically -->
+              </select>
+            </div>
+          </div>
+          <div id="staffModalError" style="display: none; color: #DC2626; font-size: 13px; margin-top: 12px; font-weight: 500;"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" onclick="closeModal('addStaffModal')">Cancel</button>
+          <button type="submit" class="btn-primary" id="btnSaveStaff"><i data-lucide="user-plus"></i> Save Staff User</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: ADD PRODUCT SKU -->
+  <div class="modal-backdrop" id="addProductModal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title">Register Master SKU Product</h3>
+          <p class="modal-subtitle">Add items to your catalog so cashiers can scan barcodes at checkout.</p>
+        </div>
+        <button type="button" class="modal-close-btn" onclick="closeModal('addProductModal')"><i data-lucide="x"></i></button>
+      </div>
+      <form onsubmit="submitAddProduct(event)">
+        <div class="modal-body">
+          <div class="form-grid">
+            <div class="form-group span-2">
+              <label for="prodName">Product Name <span class="req">*</span></label>
+              <input type="text" id="prodName" placeholder="e.g. Brookside Whole Milk 500ml" required>
+            </div>
+            <div class="form-group span-2">
+              <label for="prodBarcode">Barcode (EAN-13 / Code-128) <span class="req">*</span></label>
+              <div class="input-addon">
+                <input type="text" id="prodBarcode" placeholder="e.g. 6161101234567" required style="font-family: var(--font-mono);">
+                <button type="button" class="btn-secondary btn-sm" onclick="generateRandomBarcode()" style="padding: 6px 10px; font-size: 11px;">Generate</button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="prodSku">SKU Code</label>
+              <input type="text" id="prodSku" placeholder="e.g. MILK-500-BRK">
+            </div>
+            <div class="form-group">
+              <label for="prodUnit">Unit of Measure</label>
+              <select id="prodUnit">
+                <option value="pcs">Pieces (PCS)</option>
+                <option value="pack">Pack / Box</option>
+                <option value="kg">Kilograms (KG)</option>
+                <option value="ltr">Litres (LTR)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="prodCost">Buying / Cost Price (KES) <span class="req">*</span></label>
+              <input type="number" id="prodCost" step="0.01" placeholder="e.g. 50.00" required>
+            </div>
+            <div class="form-group">
+              <label for="prodPrice">Selling / Retail Price (KES) <span class="req">*</span></label>
+              <input type="number" id="prodPrice" step="0.01" placeholder="e.g. 65.00" required>
+            </div>
+            <div class="form-group">
+              <label for="prodStock">Initial Stock Quantity</label>
+              <input type="number" id="prodStock" step="1" value="24">
+            </div>
+            <div class="form-group">
+              <label for="prodBranch">Stock Location Branch</label>
+              <select id="prodBranch">
+                <!-- Populated dynamically -->
+              </select>
+            </div>
+          </div>
+          <div id="productModalError" style="display: none; color: #DC2626; font-size: 13px; margin-top: 12px; font-weight: 500;"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" onclick="closeModal('addProductModal')">Cancel</button>
+          <button type="submit" class="btn-primary" id="btnSaveProduct"><i data-lucide="package-plus"></i> Save to Master Catalog</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: ADD BRANCH -->
+  <div class="modal-backdrop" id="addBranchModal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title">Provision New Branch Outlet</h3>
+          <p class="modal-subtitle">Expand your store operations to a new physical retail location.</p>
+        </div>
+        <button type="button" class="modal-close-btn" onclick="closeModal('addBranchModal')"><i data-lucide="x"></i></button>
+      </div>
+      <form onsubmit="submitAddBranch(event)">
+        <div class="modal-body">
+          <div class="form-grid">
+            <div class="form-group span-2">
+              <label for="branchNameInput">Branch Outlet Name <span class="req">*</span></label>
+              <input type="text" id="branchNameInput" placeholder="e.g. Kericho Town Branch" required>
+            </div>
+            <div class="form-group span-2">
+              <label for="branchLocationInput">Physical Address / Street <span class="req">*</span></label>
+              <input type="text" id="branchLocationInput" placeholder="e.g. Moi Highway, Kericho" required>
+            </div>
+            <div class="form-group">
+              <label for="branchTillInput">Primary Till Register Code <span class="req">*</span></label>
+              <input type="text" id="branchTillInput" placeholder="e.g. TILL-01" value="TILL-01" required>
+            </div>
+          </div>
+          <div id="branchModalError" style="display: none; color: #DC2626; font-size: 13px; margin-top: 12px; font-weight: 500;"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" onclick="closeModal('addBranchModal')">Cancel</button>
+          <button type="submit" class="btn-primary" id="btnSaveBranch"><i data-lucide="store"></i> Provision Branch</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,38 @@
+# Flutter / Dart Build Files
+**/build/
+**/.dart_tool/
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+**/.packages
+**/.pub-cache/
+**/.pub/
+
+# Release Binaries and Packages
+*.apk
+*.aab
+*.exe
+*.zip
+*.tar.gz
+*.iso
+*.deb
+*.rpm
+*.app
+*.dmg
+
+# Python & Backend
+**/venv/
+**/__pycache__/
+*.py[cod]
+*.sqlite3
+*.db
+*.sqlite
+.env
+.env.local
+
+# IDE & OS Ephemera
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*~

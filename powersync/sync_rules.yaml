@@ -1,0 +1,46 @@
+# PowerSync Sync Rules for Hirall POS
+# Multi-Tenant, Multi-Branch Partitioning
+# -------------------------------------------------------------
+# Clients authenticate with a JWT containing:
+# - sub (user_id)
+# - org_id (organization_id)
+# - branch_id (branch_id - nullable for org-level accounts)
+# - role (user role)
+
+bucket_definitions:
+  # 1. Organization-wide bucket (Shared across all branches in an organization)
+  # Products catalog, categories, organization details, available modules catalog
+  org_data:
+    parameters:
+      - select organization_id from users where id = request.user_id()
+    data:
+      - select * from organizations where id = bucket.organization_id
+      - select * from modules
+      - select * from business_type_defaults
+      - select * from categories where organization_id = bucket.organization_id
+      - select * from products where organization_id = bucket.organization_id
+      - select * from branches where organization_id = bucket.organization_id
+
+  # 2. Branch-specific operational bucket (Scoped to specific branch desktop client)
+  # Branch inventory, sales, shifts, till reconciliations, branch module entitlements, tables, orders
+  branch_data:
+    parameters:
+      - select branch_id from users where id = request.user_id()
+    data:
+      - select * from branch_modules where branch_id = bucket.branch_id
+      - select * from inventory where branch_id = bucket.branch_id
+      - select * from sales where branch_id = bucket.branch_id
+      - select * from sale_items where sale_id in (select id from sales where branch_id = bucket.branch_id)
+      - select * from expenses where branch_id = bucket.branch_id
+      - select * from shifts where branch_id = bucket.branch_id
+      - select * from till_reconciliations where branch_id = bucket.branch_id
+      - select * from restaurant_tables where branch_id = bucket.branch_id
+      - select * from kitchen_orders where branch_id = bucket.branch_id
+      - select * from stock_transfers where source_branch_id = bucket.branch_id or destination_branch_id = bucket.branch_id
+
+  # 3. User profile and staff roster for the branch
+  user_data:
+    parameters:
+      - select organization_id from users where id = request.user_id()
+    data:
+      - select id, organization_id, branch_id, email, role, pin_code, full_name, is_active, created_at from users where organization_id = bucket.organization_id

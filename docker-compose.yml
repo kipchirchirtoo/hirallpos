@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  # 1. Central PostgreSQL (AWS RDS drop-in replacement with Logical Replication)
+  postgres:
+    image: postgres:16-alpine
+    container_name: hirall_postgres
+    restart: unless-stopped
+    command:
+      - "postgres"
+      - "-c"
+      - "wal_level=logical"
+      - "-c"
+      - "max_replication_slots=5"
+      - "-c"
+      - "max_wal_senders=5"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgrespassword
+      POSTGRES_DB: hirall_pos
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./powersync/replication_setup.sql:/docker-entrypoint-initdb.d/01_replication.sql
+
+  # 2. FastAPI Backend Service
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: hirall_backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql://postgres:postgrespassword@postgres:5432/hirall_pos
+      SECRET_KEY: super-secret-hirall-pos-key-change-in-production-2026-xyz
+      ENVIRONMENT: development
+      DEBUG: "True"
+      POWERSYNC_URL: http://powersync:8080
+      MPESA_ENVIRONMENT: sandbox
+    depends_on:
+      - postgres
+
+volumes:
+  postgres_data:
