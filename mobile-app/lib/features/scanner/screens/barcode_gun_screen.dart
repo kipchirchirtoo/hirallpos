@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -13,11 +14,7 @@ class BarcodeGunScreen extends StatefulWidget {
 }
 
 class _BarcodeGunScreenState extends State<BarcodeGunScreen> {
-  final MobileScannerController _scannerController = MobileScannerController(
-    detectionSpeed: DetectionSpeed.noDuplicates,
-    facing: CameraFacing.back,
-    torchEnabled: false,
-  );
+  late final MobileScannerController _scannerController;
 
   final List<Map<String, dynamic>> _scanHistory = [];
   final _manualInputController = TextEditingController();
@@ -25,6 +22,17 @@ class _BarcodeGunScreenState extends State<BarcodeGunScreen> {
   bool _isTorchOn = false;
   String? _lastScannedCode;
   DateTime? _lastScanTime;
+
+  @override
+  void initState() {
+    super.initState();
+    _scannerController = MobileScannerController(
+      detectionSpeed: DetectionSpeed.noDuplicates,
+      facing: kIsWeb ? CameraFacing.front : CameraFacing.back,
+      torchEnabled: false,
+      autoStart: true,
+    );
+  }
 
   @override
   void dispose() {

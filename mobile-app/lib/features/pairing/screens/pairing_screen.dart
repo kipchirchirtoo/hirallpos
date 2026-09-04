@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
@@ -17,11 +18,7 @@ class PairingScreen extends StatefulWidget {
 class _PairingScreenState extends State<PairingScreen> {
   final _ipController = TextEditingController();
   final _portController = TextEditingController(text: '8888');
-  final MobileScannerController _scannerController = MobileScannerController(
-    detectionSpeed: DetectionSpeed.normal,
-    facing: CameraFacing.back,
-    torchEnabled: false,
-  );
+  late final MobileScannerController _scannerController;
 
   bool _isManualMode = false;
   bool _isConnecting = false;
@@ -30,6 +27,12 @@ class _PairingScreenState extends State<PairingScreen> {
   @override
   void initState() {
     super.initState();
+    _scannerController = MobileScannerController(
+      detectionSpeed: DetectionSpeed.normal,
+      facing: kIsWeb ? CameraFacing.front : CameraFacing.back,
+      torchEnabled: false,
+      autoStart: true,
+    );
     _ipController.text = MobileBridgeClient.instance.hostIp;
     _portController.text = MobileBridgeClient.instance.port.toString();
   }

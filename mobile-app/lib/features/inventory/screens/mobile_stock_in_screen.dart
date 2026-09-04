@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -13,10 +14,7 @@ class MobileStockInScreen extends StatefulWidget {
 }
 
 class _MobileStockInScreenState extends State<MobileStockInScreen> {
-  final MobileScannerController _scannerController = MobileScannerController(
-    detectionSpeed: DetectionSpeed.noDuplicates,
-    facing: CameraFacing.back,
-  );
+  late final MobileScannerController _scannerController;
 
   final _barcodeController = TextEditingController();
   final _nameController = TextEditingController();
@@ -29,6 +27,16 @@ class _MobileStockInScreenState extends State<MobileStockInScreen> {
   final List<Map<String, dynamic>> _receivedLogs = [];
   bool _isScannerActive = false;
   bool _isSubmitting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _scannerController = MobileScannerController(
+      detectionSpeed: DetectionSpeed.noDuplicates,
+      facing: kIsWeb ? CameraFacing.front : CameraFacing.back,
+      autoStart: true,
+    );
+  }
 
   @override
   void dispose() {

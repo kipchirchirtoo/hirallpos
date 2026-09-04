@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -14,14 +15,21 @@ class MobileCashierScreen extends StatefulWidget {
 }
 
 class _MobileCashierScreenState extends State<MobileCashierScreen> {
-  final MobileScannerController _scannerController = MobileScannerController(
-    detectionSpeed: DetectionSpeed.noDuplicates,
-    facing: CameraFacing.back,
-  );
+  late final MobileScannerController _scannerController;
 
   final List<MobileCartItem> _cart = [];
   bool _isScannerOpen = false;
   final _searchController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _scannerController = MobileScannerController(
+      detectionSpeed: DetectionSpeed.noDuplicates,
+      facing: kIsWeb ? CameraFacing.front : CameraFacing.back,
+      autoStart: true,
+    );
+  }
 
   // Demo Product Catalog
   final List<Map<String, dynamic>> _catalog = [
